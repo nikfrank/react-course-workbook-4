@@ -12,6 +12,7 @@
   height: 150px;
   padding: 20px;
   color: white;
+  margin-bottom: 10px;
 }
 
 .App-title {
@@ -25,4 +26,13 @@
 @keyframes App-logo-spin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
+}
+
+ul.trades {
+  list-style: none;
+}
+
+ul.trades li.trade {
+  display: flex;
+  flex-direction: row;
 }

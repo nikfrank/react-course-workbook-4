@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
+import BitcoinLogo from './logo.svg';
 import './App.css';
 
 import connectHooks from './connectHooks';
@@ -37,10 +37,10 @@ class App extends Component {
     const { trades=[] } = this.props;
     
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <h1 className="App-title">Welcome to React</h1>
+      <div className='App'>
+        <header className='App-header'>
+          <BitcoinLogo className='App-logo' bgColor='green'/>
+          <h1 className='App-title'>Coin Exchange</h1>
         </header>
 
         <div>
@@ -54,8 +54,12 @@ class App extends Component {
           {
             trades.map( ({ fromCoin, toCoin, fromAmount, toAmount, date}, ti)=> (
               <li key={ti} className='trade'>
-                {fromAmount} {fromCoin} => {toAmount} {toCoin} @
-                time: {(new Date(date)).toString().split(' ').slice(0, 5).join(' ')}
+                <div>{fromAmount} {fromCoin}</div>
+                <div> => </div>
+                <div>{toAmount} {toCoin}</div>
+                <div>
+                  @ {(new Date(date)).toString().split(' ').slice(0, 5).join(' ')}
+                </div>
               </li>
             ) )
           }
