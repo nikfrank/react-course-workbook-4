@@ -19,7 +19,7 @@ class App extends Component {
        }) ),
   }
 
-  state = { fromCoin: 'ETH', toCoin: 'WINGS', amount: 10 }
+  state = { fromCoin: 'ETH', toCoin: 'WINGS', amount: 10, btcColor: 'green' }
 
   setFromCoin = ({ target: { value } })=> this.setState({ fromCoin: value.toUpperCase() })
   setToCoin = ({ target: { value } })=> this.setState({ toCoin: value.toUpperCase() })
@@ -31,15 +31,23 @@ class App extends Component {
     this.state.toCoin,
     this.state.amount
   )
+
+  setBtcColor = ()=> this.setState({
+    btcColor: '#' + Math.floor(16*Math.random()).toString(16) +
+              '' + Math.floor(16*Math.random()).toString(16) +
+              '' + Math.floor(16*Math.random()).toString(16),
+  })
   
   render() {
-    const { fromCoin, toCoin, amount } = this.state;
+    const { fromCoin, toCoin, amount, btcColor } = this.state;
     const { trades=[] } = this.props;
-    
+
     return (
       <div className='App'>
         <header className='App-header'>
-          <BitcoinLogo className='App-logo' bgColor='green'/>
+          <BitcoinLogo className='App-logo'
+                       bgColor={ btcColor }
+                       onClick={ this.setBtcColor }/>
           <h1 className='App-title'>Coin Exchange</h1>
         </header>
 
