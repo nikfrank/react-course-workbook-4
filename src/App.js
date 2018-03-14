@@ -1,4 +1,8 @@
 import React, { Component } from 'react';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
+
+import 'react-datepicker/dist/react-datepicker.css';
 import BitcoinLogo from './logo.svg';
 import './App.css';
 
@@ -6,7 +10,8 @@ import connectHooks from './connectHooks';
 
 class App extends Component {
   static hooks = {
-    convert: (fromCoin, toCoin, amount)=>
+    convert: (fromCoin, toCoin, amount, date)=>
+      // needs to include here the date
       fetch(
         `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`
       ).then( response => response.json() )
@@ -14,22 +19,30 @@ class App extends Component {
          trades: (cache.trades || []).concat({
            fromCoin, toCoin, fromAmount: amount,
            toAmount: Xrate * amount,
-           date: (new Date()).getTime(),
+           date: date.getTime(),
          })
        }) ),
   }
 
-  state = { fromCoin: 'ETH', toCoin: 'WINGS', amount: 10, btcColor: 'green' }
+  state = {
+    fromCoin: 'ETH',
+    toCoin: 'WINGS',
+    amount: 10,
+    btcColor: 'green',
+    tradeDate: moment(),
+  }
 
   setFromCoin = ({ target: { value } })=> this.setState({ fromCoin: value.toUpperCase() })
   setToCoin = ({ target: { value } })=> this.setState({ toCoin: value.toUpperCase() })
   
   setAmount = ({ target: { value } })=> this.setState({ amount: 1* value })
-
+  setTradeDate = tradeDate => this.setState({ tradeDate })
+  
   trade = ()=> this.props.convert(
     this.state.fromCoin,
     this.state.toCoin,
-    this.state.amount
+    this.state.amount,
+    this.state.tradeDate
   )
 
   setBtcColor = ()=> this.setState({
@@ -52,9 +65,19 @@ class App extends Component {
         </header>
 
         <div>
-          From <input value={fromCoin} onChange={this.setFromCoin}/>
-          To <input value={toCoin} onChange={this.setToCoin}/>
-          Amount <input value={amount} onChange={this.setAmount} type='number'/>
+          <div>
+            From <input value={fromCoin} onChange={this.setFromCoin}/>
+          </div>
+          <div>
+            To <input value={toCoin} onChange={this.setToCoin}/>
+          </div>
+          <div>
+            Amount <input value={amount} onChange={this.setAmount} type='number'/>
+          </div>
+          <div>
+            <DatePicker selected={this.state.tradeDate}
+                        onChange={this.setTradeDate}/>
+          </div>
           <button onClick={this.trade}>Trade</button>
         </div>
 
