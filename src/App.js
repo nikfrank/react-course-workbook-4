@@ -8,6 +8,15 @@ import './App.css';
 
 import connectHooks from './connectHooks';
 
+import fakeFetch from './fakeFetch';
+
+if(true){
+  fakeFetch.loadMock('getXrate', {
+    body: { EUR: 700, WINGS: 1000 },
+    pattern: /^https:\/\/min-api.cryptocompare.com\/data\/price\?fsym=/,
+  });
+}
+
 class App extends Component {
   static hooks = {
     convert: (fromCoin, toCoin, amount, date)=>
@@ -19,7 +28,7 @@ class App extends Component {
          trades: (cache.trades || []).concat({
            fromCoin, toCoin, fromAmount: amount,
            toAmount: Xrate * amount,
-           date: date.getTime(),
+           date,
          })
        }) ),
   }
@@ -30,6 +39,8 @@ class App extends Component {
     amount: 10,
     btcColor: 'green',
     tradeDate: moment(),
+    fromTotals: {},
+    toTotals: {},
   }
 
   setFromCoin = ({ target: { value } })=> this.setState({ fromCoin: value.toUpperCase() })
@@ -43,7 +54,16 @@ class App extends Component {
     this.state.toCoin,
     this.state.amount,
     this.state.tradeDate
-  )
+  ).then(this.reduceTotals)
+
+  reduceTotals = ()=> this.setState(state => ({
+    alreadyTotalled: this.props.trades.length,
+    fromTotals: this.props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
+      ...p, [c.fromCoin]: (p[c.fromCoin]||0) + c.fromAmount }), state.fromTotals ),
+
+    toTotals: this.props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
+      ...p, [c.toCoin]: (p[c.toCoin]||0) + c.toAmount }), state.toTotals ),
+  }) )
 
   setBtcColor = ()=> this.setState({
     btcColor: '#' + Math.floor(16*Math.random()).toString(16) +
@@ -52,7 +72,7 @@ class App extends Component {
   })
   
   render() {
-    const { fromCoin, toCoin, amount, btcColor } = this.state;
+    const { fromCoin, toCoin, amount, btcColor, fromTotals, toTotals } = this.state;
     const { trades=[] } = this.props;
 
     return (
@@ -95,6 +115,30 @@ class App extends Component {
             ) )
           }
         </ul>
+
+        <div className='totals'>
+          {Object.keys(fromTotals).length ? 'from' : null}
+          <ul>
+            {
+              Object.keys(fromTotals).map( fromCoin => (
+                <li key={fromCoin+'from'}>
+                  {fromTotals[fromCoin]} - {fromCoin}
+                </li>
+              ) )
+            }
+          </ul>
+
+          {Object.keys(toTotals).length ? 'to' : null}
+          <ul>
+            {
+              Object.keys(toTotals).map( toCoin => (
+                <li key={toCoin+'to'}>
+                  {toTotals[toCoin]} - {toCoin}
+                </li>
+              ) )
+            }
+          </ul>
+        </div>
       </div>
     );
   }

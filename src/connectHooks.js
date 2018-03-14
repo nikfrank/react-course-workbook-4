@@ -7,15 +7,15 @@ const mapValues = (obj={}, vMap)=> Object
 export default P => class HookedP extends Component {
   state = { }
 
-  hooks = mapValues( P.hooks, hook=> (...hookArgs) => {
+  hooks = mapValues( P.hooks, hook=> (...hookArgs) => ( new Promise( (resolve, reject)=>{
     const hookRes = hook(...hookArgs);
 
-    if( hookRes instanceof Promise )
-      hookRes.then( resolved => this.setState( resolved ) )
-             .catch( err => console.error(err) );
-
-    else this.setState( hookRes );
-  })
+    ( hookRes instanceof Promise ) ? (
+      hookRes.then( resolved => this.setState( resolved, resolve ) )
+             .catch( err => reject(err) )
+      
+    ) : this.setState( hookRes, resolve );
+  }) ) )
   
   render(){
     return (

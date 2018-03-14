@@ -32,6 +32,8 @@ test('that submit button makes call to fetch', (done)=>{
 
   setTimeout(()=> {
     expect(calledApi.mock.calls).toHaveLength( 1 );
+
+    fakeFetch.unloadMock('getXrate');
     done();
   }, 0);
 });

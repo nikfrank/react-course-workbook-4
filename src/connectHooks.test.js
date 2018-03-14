@@ -98,3 +98,5 @@ it('connects the hooks', (done) => {
     }, 0);
   }, 0);
 });
+
+// needs a test that makes sure the return value from the hook is a promise that resolves after the hook update is done
