@@ -15,7 +15,7 @@ export default new (class FakeFetch {
             .find( mock=> this.mocks[mock].pattern.exec(args[0]) ) ||
       this.oldFetch(...args)
     ).then( result => this.mocks[result] ? fetchify(this.mocks[result]) : result
-    ).then( result => (result.callback && result.callback(), result ) )
+    ).then( result => (result.callback && result.callback(...args), result ) )
   
   loadMock = (name, result=defaultResult)=>
     this.mocks[name] || (this.mocks[name] = result)
