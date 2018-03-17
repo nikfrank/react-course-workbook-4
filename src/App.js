@@ -15,6 +15,8 @@ if(true){
     body: { EUR: 700, WINGS: 1000 },
     pattern: /^https:\/\/min-api.cryptocompare.com\/data\/price\?fsym=/,
   });
+
+  //const oldApi = `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`;
 }
 
 class App extends Component {
@@ -22,9 +24,12 @@ class App extends Component {
     convert: (fromCoin, toCoin, amount, date)=>
       // needs to include here the date
       fetch(
-        `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`
+        'https://min-api.cryptocompare.com/data/histoday?fsym='+
+        `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${date/1000}`
+        
       ).then( response => response.json() )
-       .then( ({ [toCoin]: Xrate }) => cache => ({
+       .then( pon => pon.Data[0].close )
+       .then( Xrate=> cache => ({
          trades: (cache.trades || []).concat({
            fromCoin, toCoin, fromAmount: amount,
            toAmount: Xrate * amount,
@@ -53,7 +58,7 @@ class App extends Component {
     this.state.fromCoin,
     this.state.toCoin,
     this.state.amount,
-    this.state.tradeDate
+    this.state.tradeDate.unix()*1000
   ).then(this.reduceTotals)
 
   reduceTotals = ()=> this.setState(state => ({

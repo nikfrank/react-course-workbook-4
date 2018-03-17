@@ -5,15 +5,16 @@ const fetchify = result => ({
   json: ()=> Promise.resolve( result.body ),
 });
 
+const oldFetch = window.fetch;
+
 export default new (class FakeFetch {
   mocks = {}
-  oldFetch = window.fetch
   
   fetch = window.fetch = (...args) =>
     Promise.resolve(
       Object.keys(this.mocks)
             .find( mock=> this.mocks[mock].pattern.exec(args[0]) ) ||
-      this.oldFetch(...args)
+      oldFetch(...args)
     ).then( result => this.mocks[result] ? fetchify(this.mocks[result]) : result
     ).then( result => (result.callback && result.callback(...args), result ) )
   
