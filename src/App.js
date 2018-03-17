@@ -6,39 +6,49 @@ import 'react-datepicker/dist/react-datepicker.css';
 import BitcoinLogo from './logo.svg';
 import './App.css';
 
-import connectHooks from './connectHooks';
-
 import fakeFetch from './fakeFetch';
 
-if(true){
+
+// mock the deprecated api
+// this can also be used for offline devving!
+if(false)
   fakeFetch.loadMock('getXrate', {
     body: { EUR: 700, WINGS: 1000 },
     pattern: /^https:\/\/min-api.cryptocompare.com\/data\/price\?fsym=/,
   });
 
-  //const oldApi = `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`;
-}
+//const oldApi = `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`;
+
 
 const now = moment();
 const btcEpoch = moment('2009-01-01');
 
 class App extends Component {
   static hooks = {
-    convert: (fromCoin, toCoin, amount, date)=>
-      // needs to include here the date
-      fetch(
-        'https://min-api.cryptocompare.com/data/histoday?fsym='+
-        `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${date/1000}`
+    convert: (fromCoin, toCoin, amount, date)=> fetch(
+      'https://min-api.cryptocompare.com/data/histoday?fsym='+
+      `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${date/1000}`
         
-      ).then( response => response.json() )
-       .then( pon => pon.Data[0].close )
-       .then( Xrate=> cache => ({
-         trades: (cache.trades || []).concat({
-           fromCoin, toCoin, fromAmount: amount,
-           toAmount: Xrate * amount,
-           date,
-         })
-       }) ),
+    ).then( response => response.json() )
+     .then( pon => pon.Data[0].close )
+     .then( Xrate=> cache => ({
+       trades: (cache.trades || []).concat({
+         fromCoin, toCoin, fromAmount: amount,
+         toAmount: Xrate * amount,
+         date,
+       })
+     }) ),
+
+    saveTrades: trades => {
+      localStorage.trades = JSON.stringify(trades);
+      return Promise.resolve();
+    },
+
+    loadTrades: ()=> Promise.resolve()
+                            .then(()=> ({ trades: JSON.parse( localStorage.trades ) }) )
+                            .catch( err => ({ trades: [] }) ),
+
+    clearTrades: ()=> ( localStorage.trades = '' ) || Promise.resolve({ trades: [] }),
   }
 
   state = {
@@ -49,6 +59,7 @@ class App extends Component {
     tradeDate: moment(),
     fromTotals: {},
     toTotals: {},
+    alreadyTotalled: 0,
   }
 
   setFromCoin = ({ target: { value } })=> this.setState({ fromCoin: value.toUpperCase() })
@@ -62,15 +73,17 @@ class App extends Component {
     this.state.toCoin,
     this.state.amount,
     this.state.tradeDate.unix()*1000
-  ).then(this.reduceTotals)
+  )
 
-  reduceTotals = ()=> this.setState(state => ({
-    alreadyTotalled: this.props.trades.length,
-    fromTotals: this.props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
-      ...p, [c.fromCoin]: (p[c.fromCoin]||0) + c.fromAmount }), state.fromTotals ),
+  reduceTotals = (props = this.props)=> this.setState(state => ({
+    alreadyTotalled: props.trades.length,
+    fromTotals: props.trades.length ?
+                props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
+                  ...p, [c.fromCoin]: (p[c.fromCoin]||0) + c.fromAmount }), state.fromTotals ) : {},
 
-    toTotals: this.props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
-      ...p, [c.toCoin]: (p[c.toCoin]||0) + c.toAmount }), state.toTotals ),
+    toTotals: props.trades.length ?
+              props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
+                ...p, [c.toCoin]: (p[c.toCoin]||0) + c.toAmount }), state.toTotals ) : {},
   }) )
 
   setBtcColor = ()=> this.setState({
@@ -79,6 +92,11 @@ class App extends Component {
               '' + Math.floor(16*Math.random()).toString(16),
   })
   
+  componentWillReceiveProps(nuProps, oldProps){
+    if( nuProps.trades && ( (oldProps.trades||{ length: -1 }).length !== nuProps.trades.length) )
+      this.reduceTotals(nuProps);
+  }
+
   render() {
     const { fromCoin, toCoin, amount, btcColor, fromTotals, toTotals } = this.state;
     const { trades=[] } = this.props;
@@ -148,10 +166,14 @@ class App extends Component {
               ) )
             }
           </ul>
+
+          {trades.length? (<button onClick={()=> this.props.saveTrades(trades)}> save </button>): null }
+          <button onClick={this.props.loadTrades}> load </button>
+          {trades.length? (<button onClick={this.props.clearTrades}> clear </button>): null }
         </div>
       </div>
     );
   }
 }
 
-export default connectHooks(App);
+export default App;

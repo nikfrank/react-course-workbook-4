@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom';
 import App from './App';
 
 import fakeFetch from './fakeFetch';
+import connectHooks from './connectHooks';
 
 import Enzyme, { mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
@@ -17,16 +18,18 @@ it('renders without crashing', () => {
 });
 
 test('that submit button makes call to fetch', (done)=>{
+  const ConnectedApp = connectHooks(App);
+
   const calledApi = jest.fn();
   
   fakeFetch.loadMock('getXrate', {
     status: 200,
-    body: { EUR: 700 },
-    pattern: /^https:\/\/min-api.cryptocompare.com\/data\/price\?fsym=/,
+    body: { Data: [{ close: 700 }] },
+    pattern: /^https:\/\/min-api.cryptocompare.com/,
     callback: calledApi,
   });
 
-  const p = mount(<App/>);
+  const p = mount(<ConnectedApp/>);
 
   p.find('button').first().simulate('click');
 
