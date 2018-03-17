@@ -19,6 +19,9 @@ if(true){
   //const oldApi = `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`;
 }
 
+const now = moment();
+const btcEpoch = moment('2009-01-01');
+
 class App extends Component {
   static hooks = {
     convert: (fromCoin, toCoin, amount, date)=>
@@ -101,6 +104,8 @@ class App extends Component {
           </div>
           <div>
             <DatePicker selected={this.state.tradeDate}
+                        maxDate={now}
+                        minDate={btcEpoch}
                         onChange={this.setTradeDate}/>
           </div>
           <button onClick={this.trade}>Trade</button>
