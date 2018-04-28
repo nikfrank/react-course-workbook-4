@@ -25,9 +25,9 @@ const btcEpoch = moment('2009-01-01');
 
 class App extends Component {
   static hooks = {
-    convert: (fromCoin, toCoin, amount, date)=> fetch(
+    convert: ({ fromCoin, toCoin, amount, date })=> fetch(
       'https://min-api.cryptocompare.com/data/histoday?fsym='+
-      `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${date/1000}`
+      `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${Math.floor(date/1000)}`
         
     ).then( response => response.json() )
      .then( ({ Data: [{ close: Xrate }] }) => Xrate )
@@ -57,6 +57,7 @@ class App extends Component {
     amount: 10,
     btcColor: 'green',
     tradeDate: moment(),
+    
     fromTotals: {},
     toTotals: {},
     alreadyTotalled: 0,
@@ -68,12 +69,12 @@ class App extends Component {
   setAmount = ({ target: { value } })=> this.setState({ amount: 1* value })
   setTradeDate = tradeDate => this.setState({ tradeDate })
   
-  trade = ()=> this.props.convert(
-    this.state.fromCoin,
-    this.state.toCoin,
-    this.state.amount,
-    this.state.tradeDate.unix()*1000
-  )
+  trade = ()=> this.props.convert({
+    fromCoin: this.state.fromCoin,
+    toCoin: this.state.toCoin,
+    amount: this.state.amount,
+    date: this.state.tradeDate.unix()*1000,
+  })
 
   reduceTotals = (props = this.props)=> this.setState(state => ({
     alreadyTotalled: props.trades.length,
@@ -131,7 +132,7 @@ class App extends Component {
 
         <ul className='trades'>
           {
-            trades.map( ({ fromCoin, toCoin, fromAmount, toAmount, date}, ti)=> (
+            trades.map( ({ fromCoin, toCoin, fromAmount, toAmount, date }, ti)=> (
               <li key={ti} className='trade'>
                 <div>{fromAmount} {fromCoin}</div>
                 <div> => </div>
