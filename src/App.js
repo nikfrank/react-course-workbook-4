@@ -25,30 +25,19 @@ const btcEpoch = moment('2009-01-01');
 
 class App extends Component {
   static hooks = {
-    convert: (fromCoin, toCoin, amount, date)=> fetch(
+    convert: ({ fromCoin, toCoin, amount, date })=> fetch(
       'https://min-api.cryptocompare.com/data/histoday?fsym='+
-      `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${date/1000}`
+      `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${Math.floor(date/1000)}`
         
     ).then( response => response.json() )
      .then( ({ Data: [{ close: Xrate }] }) => Xrate )
-     .then( Xrate=> cache => ({
-       trades: (cache.trades || []).concat({
+     .then( Xrate=> ({
+       lastTrade: {
          fromCoin, toCoin, fromAmount: amount,
          toAmount: Xrate * amount,
          date,
-       })
+       }
      }) ),
-
-    saveTrades: trades => {
-      localStorage.trades = JSON.stringify(trades);
-      return Promise.resolve();
-    },
-
-    loadTrades: ()=> Promise.resolve()
-                            .then(()=> ({ trades: JSON.parse( localStorage.trades ) }) )
-                            .catch( err => ({ trades: [] }) ),
-
-    clearTrades: ()=> ( localStorage.trades = '' ) || Promise.resolve({ trades: [] }),
   }
 
   state = {
@@ -56,10 +45,6 @@ class App extends Component {
     toCoin: 'WINGS',
     amount: 10,
     btcColor: 'green',
-    tradeDate: moment(),
-    fromTotals: {},
-    toTotals: {},
-    alreadyTotalled: 0,
   }
 
   setFromCoin = ({ target: { value } })=> this.setState({ fromCoin: value.toUpperCase() })
@@ -68,39 +53,24 @@ class App extends Component {
   setAmount = ({ target: { value } })=> this.setState({ amount: 1* value })
   setTradeDate = tradeDate => this.setState({ tradeDate })
   
-  trade = ()=> this.props.convert(
-    this.state.fromCoin,
-    this.state.toCoin,
-    this.state.amount,
-    this.state.tradeDate.unix()*1000
-  )
-
-  reduceTotals = (props = this.props)=> this.setState(state => ({
-    alreadyTotalled: props.trades.length,
-    fromTotals: props.trades.length ?
-                props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
-                  ...p, [c.fromCoin]: (p[c.fromCoin]||0) + c.fromAmount }), state.fromTotals ) : {},
-
-    toTotals: props.trades.length ?
-              props.trades.slice(state.alreadyTotalled).reduce( (p, c)=> ({
-                ...p, [c.toCoin]: (p[c.toCoin]||0) + c.toAmount }), state.toTotals ) : {},
-  }) )
+  trade = ()=> this.props.convert({
+    fromCoin: this.state.fromCoin,
+    toCoin: this.state.toCoin,
+    amount: this.state.amount,
+    date: (new Date()).getTime()
+  })
 
   setBtcColor = ()=> this.setState({
     btcColor: '#' + Math.floor(16*Math.random()).toString(16) +
               '' + Math.floor(16*Math.random()).toString(16) +
               '' + Math.floor(16*Math.random()).toString(16),
   })
-  
-  componentWillReceiveProps(nuProps, oldProps){
-    if( nuProps.trades && ( (oldProps.trades||{ length: -1 }).length !== nuProps.trades.length) )
-      this.reduceTotals(nuProps);
-  }
 
   render() {
-    const { fromCoin, toCoin, amount, btcColor, fromTotals, toTotals } = this.state;
-    const { trades=[] } = this.props;
-
+    const { fromCoin, toCoin, amount, btcColor } = this.state;
+    const { lastTrade={} } = this.props;
+    const { fromCoin: lastFrom, toCoin: lastTo, fromAmount, toAmount, date } = lastTrade;
+    
     return (
       <div className='App'>
         <header className='App-header'>
@@ -120,57 +90,21 @@ class App extends Component {
           <div>
             Amount <input value={amount} onChange={this.setAmount} type='number'/>
           </div>
-          <div>
-            <DatePicker selected={this.state.tradeDate}
-                        maxDate={now}
-                        minDate={btcEpoch}
-                        onChange={this.setTradeDate}/>
-          </div>
           <button onClick={this.trade}>Trade</button>
         </div>
 
-        <ul className='trades'>
-          {
-            trades.map( ({ fromCoin, toCoin, fromAmount, toAmount, date}, ti)=> (
-              <li key={ti} className='trade'>
-                <div>{fromAmount} {fromCoin}</div>
-                <div> => </div>
-                <div>{toAmount} {toCoin}</div>
-                <div>
-                  @ {(new Date(date)).toString().split(' ').slice(0, 5).join(' ')}
-                </div>
-              </li>
-            ) )
-          }
-        </ul>
-
-        <div className='totals'>
-          {Object.keys(fromTotals).length ? 'from' : null}
-          <ul>
-            {
-              Object.keys(fromTotals).map( fromCoin => (
-                <li key={fromCoin+'from'}>
-                  {fromTotals[fromCoin]} - {fromCoin}
-                </li>
-              ) )
-            }
-          </ul>
-
-          {Object.keys(toTotals).length ? 'to' : null}
-          <ul>
-            {
-              Object.keys(toTotals).map( toCoin => (
-                <li key={toCoin+'to'}>
-                  {toTotals[toCoin]} - {toCoin}
-                </li>
-              ) )
-            }
-          </ul>
-
-          {trades.length? (<button onClick={()=> this.props.saveTrades(trades)}> save </button>): null }
-          <button onClick={this.props.loadTrades}> load </button>
-          {trades.length? (<button onClick={this.props.clearTrades}> clear </button>): null }
-        </div>
+        {
+          !lastFrom ? null : (
+            <div className='trade'>
+              <div>{fromAmount} {lastFrom}</div>
+              <div> => </div>
+              <div>{toAmount} {lastTo}</div>
+              <div>
+                @ {(new Date(date)).toString().split(' ').slice(0, 5).join(' ')}
+              </div>
+            </div>
+          )
+        }
       </div>
     );
   }

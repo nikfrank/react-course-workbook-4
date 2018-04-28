@@ -21,49 +21,16 @@ it('renders without crashing', () => {
 // e2e module style test
 test('connected app with mocked window.fetch', (done)=>{
   // mock over the api call
-  
-  const calledApi = jest.fn();
-  
-  fakeFetch.loadMock('getXrate', {
-    status: 200,
-    body: { Data: [{ close: 700 }] },
-    pattern: /^https:\/\/min-api.cryptocompare.com/,
-    callback: calledApi,
-  });
 
   // mount the component
-  
-  const ConnectedApp = connectHooks(App);
-  const p = mount( <ConnectedApp/> );
-
-  const inputs = p.find('input');
-  expect( inputs ).toHaveLength( 4 );
 
   // enter some values
 
-  inputs.at(2).simulate('change', { target: { value: 100 } });
-  inputs.at(1).simulate('change', { target: { value: 'USD' } });
-  
-  p.find('button').first().simulate('click');
+  // once the Promise resolves, expect the api to've been called
 
-  setTimeout(()=> {
-    // once the Promise resolves, expect the api to've been called
-    
-    expect( calledApi.mock.calls ).toHaveLength( 1 );
-    expect( calledApi.mock.calls[0][0].split('&')[1] ).toEqual('tsym=USD');
-
-    // and once we've triggered a render, expect a trade to be rendered
-    p.update();
-
-    const trades = p.find('li.trade');
-    expect( trades ).toHaveLength( 1 );
-
-    expect( trades.at(0).text() ).toContain('100 ETH => 70000 USD');
-
-    // clean up
-    fakeFetch.unloadMock('getXrate');
-    done();
-  }, 0);
+  // and once we've triggered a render, expect a trade to be rendered
+  // clean up
+  done();
 });
 
 // next, write such a test for localStorage feature
