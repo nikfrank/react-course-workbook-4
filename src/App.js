@@ -30,7 +30,7 @@ class App extends Component {
       `${fromCoin}&tsym=${toCoin}&limit=1&toTs=${date/1000}`
         
     ).then( response => response.json() )
-     .then( pon => pon.Data[0].close )
+     .then( ({ Data: [{ close: Xrate }] }) => Xrate )
      .then( Xrate=> cache => ({
        trades: (cache.trades || []).concat({
          fromCoin, toCoin, fromAmount: amount,

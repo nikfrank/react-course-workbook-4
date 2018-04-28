@@ -45,13 +45,10 @@ class Tester extends Component {
 
 it('connects the hooks', (done) => {
   // mount a test component
-
-  const P = connectHooks(Tester);
-  
+  const P = connectHooks(Tester);  
   const p = mount(<P/>);
   
   // simulate a click to a button
-
   expect( p.find('.items').first().text() ).toEqual( '[]' );
   expect( p.find('.things').first().text() ).toEqual( '[]' );
 
