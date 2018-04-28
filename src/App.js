@@ -1,27 +1,7 @@
 import React, { Component } from 'react';
-import DatePicker from 'react-datepicker';
-import moment from 'moment';
 
-import 'react-datepicker/dist/react-datepicker.css';
 import BitcoinLogo from './logo.svg';
 import './App.css';
-
-import fakeFetch from './fakeFetch';
-
-
-// mock the deprecated api
-// this can also be used for offline devving!
-if(false)
-  fakeFetch.loadMock('getXrate', {
-    body: { EUR: 700, WINGS: 1000 },
-    pattern: /^https:\/\/min-api.cryptocompare.com\/data\/price\?fsym=/,
-  });
-
-//const oldApi = `https://min-api.cryptocompare.com/data/price?fsym=${fromCoin}&tsyms=${toCoin}`;
-
-
-const now = moment();
-const btcEpoch = moment('2009-01-01');
 
 class App extends Component {
   static hooks = {
