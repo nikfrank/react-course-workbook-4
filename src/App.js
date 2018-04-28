@@ -37,7 +37,9 @@ class App extends Component {
          toAmount: Xrate * amount,
          date,
        })
-     }) ),
+     }) )
+     .catch(err => console.error(err, fromCoin, toCoin, 'probably Coin no exists err')),
+    // gobble up error after logging ! ? !
 
     saveTrades: trades => {
       localStorage.trades = JSON.stringify(trades);
