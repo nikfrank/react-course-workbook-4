@@ -1,5 +1,5 @@
 # dependencies
-node_modules/
+keep_node_modules/
 
 # # production
 dist/

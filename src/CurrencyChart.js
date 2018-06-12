@@ -14,6 +14,18 @@ const exampleLineChartData = [
 const SimpleLineChart = ({ trades })=> {
 
   // here convert trades
+
+console.log(JSON.stringify(trades));
+
+  const exampleTrade = [
+    {
+      "fromCoin":"ETH",
+      "toCoin":"WINGS",
+      "fromAmount":10,
+      "toAmount":17110.3,
+      "date":1528791856000,
+    },
+  ];
   
   return (
     <LineChart width={600} height={300} data={exampleLineChartData}
