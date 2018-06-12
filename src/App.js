@@ -8,6 +8,8 @@ import './App.css';
 
 import fakeFetch from './fakeFetch';
 
+import CurrencyChart from './CurrencyChart';
+
 
 // mock the deprecated api
 // this can also be used for offline devving!
@@ -174,6 +176,7 @@ class App extends Component {
           <button onClick={this.props.loadTrades}> load </button>
           {trades.length? (<button onClick={this.props.clearTrades}> clear </button>): null }
         </div>
+        <CurrencyChart trades={trades} />
       </div>
     );
   }
