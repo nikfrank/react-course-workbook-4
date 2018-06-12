@@ -29,17 +29,32 @@ const SimpleLineChart = ({ trades })=> {
   const exampleTrades = [
     {
       "fromCoin":"ETH",
-      "toCoin":"WINGS",
+      "toCoin":"BTC",
       "fromAmount":10,
-      "toAmount":17110.3,
+      "toAmount":174.3,
       "date":1528791856000,
     },
+    
     {
-      "fromCoin":"WINGS",
+      "fromCoin":"BTC",
       "toCoin":"ETH",
       "toAmount":10,
-      "fromAmount":17110.3,
+      "fromAmount":180.3,
       "date":1528791957000,
+    },
+    {
+      "fromCoin":"BTC",
+      "toCoin":"ETH",
+      "toAmount":10,
+      "fromAmount":185.3,
+      "date":1528791958000,
+    },
+    {
+      "fromCoin":"ETH",
+      "toCoin":"BTC",
+      "toAmount":100,
+      "fromAmount":5.3,
+      "date":1528791959000,
     },
   ];
 
