@@ -1,5 +1,6 @@
 # dependencies
 keep_node_modules/
+node_modules/.cache
 
 # # production
 dist/
